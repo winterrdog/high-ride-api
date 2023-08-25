@@ -12,6 +12,8 @@ export type RideDocument = mongoose.HydratedDocument<Ride>;
         transform: function (doc, ret, options) {
             ret.id = ret._id;
 
+            // todo: attach passenger and driver's name to ret obj
+
             // remove _id, __v from the returned object
             delete ret._id;
             delete ret.__v;
@@ -53,3 +55,18 @@ export class Ride {
 }
 
 export const RideSchema = SchemaFactory.createForClass(Ride);
+
+function populateUserMiddleware(next) {
+    this.populate(
+        User.name,
+        "firstName lastName phoneNumber role driverStatus",
+    );
+
+    next();
+}
+
+// populate passenger and driver fields on "find"
+RideSchema.pre("find", populateUserMiddleware);
+
+// populate passenger and driver fields on "findOne"
+RideSchema.pre("findOne", populateUserMiddleware);
