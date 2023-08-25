@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { HydratedDocument } from "mongoose";
+import * as argon2 from "argon2";
 
 export type UserDocument = HydratedDocument<User>;
 
@@ -64,3 +65,22 @@ export class User {
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
+
+// hash password before saving
+UserSchema.pre<UserDocument>("save", async function (next) {
+    const user = this;
+
+    // only hash the password if it has been modified (or is new)
+    if (!user.isModified("password")) {
+        return next();
+    }
+
+    try {
+        // generate a hash
+        user.password = await argon2.hash(user.password);
+
+        return next();
+    } catch (err) {
+        return next(err);
+    }
+});
