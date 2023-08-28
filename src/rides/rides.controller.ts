@@ -14,6 +14,11 @@ import { Roles } from "../auth/decorators/roles.decorator";
 import { RidesService } from "./rides.service";
 import { CreateRideDto, UpdateRideStatusDto } from "./dto/rides.dto";
 import { Request } from "express";
+import {
+    IsBodyEmptyPipe,
+    IsHexadecimalStringPipe,
+    IsRideStatusOkPipe,
+} from "../validation.pipes";
 
 @Controller("rides")
 @UseGuards(JwtAuthGuard) // allow authenticated users only
@@ -34,7 +39,10 @@ export class RidesController {
     @UseGuards(RolesGuard)
     @Roles("passenger") // only passengers create rides
     @Post()
-    async createRide(@Body() reqBody: CreateRideDto, @Req() req: Request) {
+    async createRide(
+        @Body(new IsBodyEmptyPipe()) reqBody: CreateRideDto,
+        @Req() req: Request,
+    ) {
         const ride = await this.rideService.createRide(req, reqBody);
 
         if (ride instanceof Error) throw ride;
@@ -44,8 +52,9 @@ export class RidesController {
 
     @Patch(":id")
     async updateRideStatus(
-        @Param("id") id: string,
-        @Body() reqBody: UpdateRideStatusDto,
+        @Param("id", new IsHexadecimalStringPipe()) id: string,
+        @Body(new IsBodyEmptyPipe(), new IsRideStatusOkPipe())
+        reqBody: UpdateRideStatusDto,
         @Req() req: Request,
     ) {
         const ride = await this.rideService.updateRideStatus(id, req, reqBody);
