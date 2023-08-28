@@ -8,16 +8,7 @@ export type UserDocument = HydratedDocument<User>;
     strictQuery: true,
     timestamps: true,
     toJSON: {
-        transform: function (doc, ret, options) {
-            ret.id = ret._id;
-
-            // remove _id, __v, password from the returned object
-            delete ret.password;
-            delete ret._id;
-            delete ret.__v;
-
-            return ret;
-        },
+        transform: userJsonTransformer,
     },
 })
 export class User {
@@ -67,7 +58,23 @@ export class User {
 export const UserSchema = SchemaFactory.createForClass(User);
 
 // hash password before saving
-UserSchema.pre<UserDocument>("save", async function (next) {
+UserSchema.pre<UserDocument>("save", hashPasswdMiddleware);
+
+// compare password with that one in database
+UserSchema.method("compareDbPassword", async function (password) {
+    try {
+        return await argon2.verify(this.password, password);
+    } catch (error) {
+        return false;
+    }
+});
+
+// get a user's id
+UserSchema.virtual("getUserId").get(function () {
+    return this._id.toHexString();
+});
+
+async function hashPasswdMiddleware(next) {
     const user = this;
 
     // only hash the password if it has been modified (or is new)
@@ -83,4 +90,19 @@ UserSchema.pre<UserDocument>("save", async function (next) {
     } catch (err) {
         return next(err);
     }
-});
+}
+
+// controls what is returned when a user object is converted to JSON
+function userJsonTransformer(doc, ret, options) {
+    ret.id = ret._id;
+    ret.dateCreated = ret.createdAt;
+    ret.lastModified = ret.updatedAt;
+
+    delete ret.password;
+    delete ret.createdAt;
+    delete ret.updatedAt;
+    delete ret._id;
+    delete ret.__v;
+
+    return ret;
+}

@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import * as mongoose from "mongoose";
-import { ILocation } from "../rides.interface";
+import { Location } from "../rides.interface";
 import { User } from "../../users/schemas/users.schema";
 
 export type RideDocument = mongoose.HydratedDocument<Ride>;
@@ -9,17 +9,7 @@ export type RideDocument = mongoose.HydratedDocument<Ride>;
     strictQuery: true,
     timestamps: true,
     toJSON: {
-        transform: function (doc, ret, options) {
-            ret.id = ret._id;
-
-            // todo: attach passenger and driver's name to ret obj
-
-            // remove _id, __v from the returned object
-            delete ret._id;
-            delete ret.__v;
-
-            return ret;
-        },
+        transform: rideJsonTransformer,
     },
 })
 export class Ride {
@@ -33,22 +23,25 @@ export class Ride {
     @Prop({
         type: mongoose.Schema.Types.ObjectId,
         ref: User.name,
-    })
+        default: null,
+    }) // todo: on driver acceptance, update this and rideStatus
     driver: User;
 
     @Prop({
         required: [true, "Please provide the passenger's current location"],
+        type: Location,
     })
-    pickUpLocation: ILocation;
+    pickUpLocation: Location;
 
     @Prop({
+        type: Location,
         required: [true, "Please provide the passenger's destination"],
     })
-    dropOffLocation: ILocation;
+    dropOffLocation: Location;
 
     @Prop({
         required: [true, "Please provide the ride's status"],
-        enum: ["pending", "accepted", "completed", "canceled"],
+        enum: ["pending", "accepted", "completed", "cancelled"],
         default: "pending",
     })
     rideStatus: string;
@@ -56,17 +49,33 @@ export class Ride {
 
 export const RideSchema = SchemaFactory.createForClass(Ride);
 
+// populate passenger and driver fields
+RideSchema.pre("find", populateUserMiddleware);
+RideSchema.pre("findOne", populateUserMiddleware);
+RideSchema.pre("findOneAndUpdate", populateUserMiddleware);
+
+// get a ride's id
+RideSchema.virtual("getRideId").get(function () {
+    return this._id.toHexString();
+});
+
 function populateUserMiddleware(next) {
-    this.populate(
-        User.name,
-        "firstName lastName phoneNumber role driverStatus",
-    );
+    this.populate({
+        path: "passenger driver",
+        select: "firstName lastName phoneNumber role driverStatus",
+    });
 
     next();
 }
 
-// populate passenger and driver fields on "find"
-RideSchema.pre("find", populateUserMiddleware);
+// controls what is returned when a ride object is converted to JSON
+function rideJsonTransformer(doc, ret, options) {
+    ret.id = ret._id;
 
-// populate passenger and driver fields on "findOne"
-RideSchema.pre("findOne", populateUserMiddleware);
+    // todo: attach passenger and driver's name to ret obj
+
+    delete ret._id;
+    delete ret.__v;
+
+    return ret;
+}
