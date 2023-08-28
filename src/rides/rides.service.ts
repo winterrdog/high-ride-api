@@ -6,7 +6,7 @@ import {
 } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
-import { Ride, RideDocument } from "./schemas/rides.schema";
+import { Ride } from "./schemas/rides.schema";
 import { CreateRideDto, UpdateRideStatusDto } from "./dto/rides.dto";
 import { Request } from "express";
 import { UsersService } from "../users/users.service";
@@ -90,13 +90,15 @@ export class RidesService {
                 }
 
                 // check if driver's already accepted a ride
-                const driver = await this.rideModel.findOne({
-                    driver: user._id,
-                });
-                if (driver) {
-                    return new ForbiddenException(
-                        "You cannot accept a new ride if you have already accepted another ride.",
-                    );
+                {
+                    const existingDriver = await this.rideModel.findOne({
+                        driver: user._id,
+                    });
+                    if (existingDriver) {
+                        return new ForbiddenException(
+                            "You cannot accept a new ride if you have already accepted another ride.",
+                        );
+                    }
                 }
 
                 ride = await this.rideModel.findByIdAndUpdate(
