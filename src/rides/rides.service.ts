@@ -104,6 +104,18 @@ export class RidesService {
                     { driver: user._id, rideStatus: reqBody.rideStatus },
                     { new: true },
                 );
+            } else if (
+                user.role === "driver" &&
+                reqBody.rideStatus === "canceled"
+            ) {
+                ride = await this.rideModel.findByIdAndUpdate(
+                    rideId,
+                    {
+                        driver: null,
+                        rideStatus: reqBody.rideStatus,
+                    },
+                    { new: true },
+                );
             } else {
                 // if user's passenger, they can't mark a ride as
                 // accepted or completed
