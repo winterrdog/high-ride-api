@@ -15,6 +15,7 @@ import { UsersService } from "./users.service";
 import { CreateUserDto, UpdateDriverStatusDto } from "./dto/users.dto";
 import { AuthService } from "../auth/auth.service";
 import { IJwtPayload } from "../auth/auth.interface";
+import { IsBodyEmptyPipe } from "../validation.pipes";
 
 @Controller("user")
 export class UsersController {
@@ -24,7 +25,7 @@ export class UsersController {
     ) {}
 
     @Post("register")
-    async registerUser(@Body() body: CreateUserDto) {
+    async registerUser(@Body(new IsBodyEmptyPipe()) body: CreateUserDto) {
         const user = await this.userService.createUser(body);
 
         if (user instanceof Error) throw user;
@@ -48,7 +49,7 @@ export class UsersController {
     @Roles("driver") // for drivers only
     @Patch("profile/driver")
     async updateDriverStatus(
-        @Body() body: UpdateDriverStatusDto,
+        @Body(new IsBodyEmptyPipe()) body: UpdateDriverStatusDto,
         @Req() req: Request,
     ) {
         const { sub: userId } = req.user as IJwtPayload;
