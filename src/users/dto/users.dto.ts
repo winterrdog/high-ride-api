@@ -5,5 +5,8 @@ export class CreateUserDto {
     readonly password: string;
     readonly phoneNumber: string;
     readonly role: string;
-    readonly driverStatus: string;
+}
+
+export class UpdateDriverStatusDto {
+    readonly driverStatus: "available" | "unavailable";
 }
