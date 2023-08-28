@@ -24,7 +24,7 @@ export class Ride {
         type: mongoose.Schema.Types.ObjectId,
         ref: User.name,
         default: null,
-    }) // todo: on driver acceptance, update this and rideStatus
+    })
     driver: User;
 
     @Prop({
@@ -71,8 +71,6 @@ function populateUserMiddleware(next) {
 // controls what is returned when a ride object is converted to JSON
 function rideJsonTransformer(doc, ret, options) {
     ret.id = ret._id;
-
-    // todo: attach passenger and driver's name to ret obj
 
     delete ret._id;
     delete ret.__v;

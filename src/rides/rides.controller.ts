@@ -24,7 +24,6 @@ export class RidesController {
     @Roles("driver") // only drivers get rides
     @Get()
     async fetchAllRides(@Req() req: Request) {
-        // todo: check if driver's available
         const rides = await this.rideService.queryAllRides(req);
 
         if (rides instanceof Error) throw rides;
