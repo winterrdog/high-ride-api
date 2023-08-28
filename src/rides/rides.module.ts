@@ -3,7 +3,7 @@ import { MongooseModule } from "@nestjs/mongoose";
 import { RidesService } from "./rides.service";
 import { Ride, RideSchema } from "./schemas/rides.schema";
 import { RidesController } from "./rides.controller";
-import { UsersModule } from "src/users/users.module";
+import { UsersModule } from "../users/users.module";
 
 @Module({
     imports: [
