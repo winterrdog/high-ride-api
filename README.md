@@ -418,6 +418,9 @@ Send a `PATCH` request with the following data in `JSON` format.
 $ npm test
 ```
 
+## Author
+winterrdog - [GitHub](https://github.com/winterrdog)
+
 ## License
 
 `high-ride-api` is of [Unlicense](LICENSE).
