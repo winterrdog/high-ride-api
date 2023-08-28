@@ -1,12 +1,16 @@
 import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
-import * as dotenv from "dotenv";
 
 // load environment variables
+import * as dotenv from "dotenv";
 dotenv.config();
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
+
+    // todo: add app middleware
+    // e.g. app.use(cors())
+
     await app.listen(process.env.PORT ?? 3000);
 }
 
