@@ -24,9 +24,9 @@ export class IsHexadecimalStringPipe implements PipeTransform<string> {
 }
 
 @Injectable()
-export class IsRideStatusOkPipe implements PipeTransform<string> {
-    transform(value: string, metadata: ArgumentMetadata) {
-        if (!this.isRideStatus(value)) {
+export class IsRideStatusOkPipe implements PipeTransform<any> {
+    transform(value: any, metadata: ArgumentMetadata) {
+        if (!this.isRideStatus(value.rideStatus)) {
             throw new BadRequestException(
                 "ride status must be one of: accepted, completed, canceled",
             );
