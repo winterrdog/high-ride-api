@@ -20,11 +20,13 @@ export class UsersService {
     async createUser(user: CreateUserDto) {
         try {
             // check to see if user already exists
-            const existingUser = await this.userModel.findOne({
-                email: user.email,
-            });
-            if (existingUser) {
-                return new ForbiddenException("User already exists.");
+            {
+                const existingUser = await this.userModel.findOne({
+                    email: user.email,
+                });
+                if (existingUser) {
+                    return new ForbiddenException("User already exists.");
+                }
             }
 
             const newUser = new this.userModel({
@@ -97,7 +99,6 @@ export class UsersService {
     // update a driver's status
     async updateDriverStatus(userId: string, reqData: UpdateDriverStatusDto) {
         try {
-            // find user and check if it's a driver
             const user = await this.userModel.findById(userId);
             if (!user) {
                 return new NotFoundException("User not found.");

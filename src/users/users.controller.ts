@@ -55,9 +55,8 @@ export class UsersController {
         const { sub: userId } = req.user as IJwtPayload;
 
         const user = await this.userService.updateDriverStatus(userId, body);
-        if (user instanceof Error) {
-            throw user;
-        }
+
+        if (user instanceof Error) throw user;
 
         return user;
     }

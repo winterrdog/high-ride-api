@@ -22,14 +22,16 @@ export class RidesService {
     async queryAllRides(req: Request) {
         try {
             // check if a driver's status is available
-            const user = await this.userService.queryUserFromRequest(req);
+            {
+                const driver = await this.userService.queryUserFromRequest(req);
 
-            if (user instanceof Error) return user;
+                if (driver instanceof Error) return driver;
 
-            if (user.driverStatus !== "available") {
-                return new ForbiddenException(
-                    "You can't get rides if you're not available.",
-                );
+                if (driver.driverStatus !== "available") {
+                    return new ForbiddenException(
+                        "You can't get rides if you're not available.",
+                    );
+                }
             }
 
             const rides = await this.rideModel.find();
@@ -58,7 +60,10 @@ export class RidesService {
                 dropOffLocation: ride.dropoffLocation,
             });
 
-            return await newRide.save();
+            return (await newRide.save()).populate({
+                path: "passenger driver",
+                select: "firstName lastName phoneNumber role driverStatus",
+            });
         } catch (_) {
             return new InternalServerErrorException(
                 "Internal Server Error occurred",
